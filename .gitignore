@@ -1,5 +1,6 @@
 .env
 .env.local
-.bins
+bins/
 *.sqlite
 node_modules
+package-lock.json
