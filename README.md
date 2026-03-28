@@ -21,6 +21,7 @@
   <a href="https://dc.queenmc.pl/"><img src="https://img.shields.io/badge/Discord-%23000000.svg?style=for-the-badge&logo=discord&logoColor=pink" alt="Discord"></a>
   <a href="https://socl.gg/input"><img src="https://img.shields.io/badge/Telegram-%23000000?style=for-the-badge&logo=telegram&logoColor=pink" alt="Telegram"></a>
 </p>
+<br/>
 
 ## Features
 
@@ -152,7 +153,21 @@
 
 
 <p align="center">
-    I will not give instructions on how to setup this bot,
-    as its simple enough to be understood. Also i am publicly
-    serving this app up to 2000 users by now.
+    Also i would like to mention that i won't give you any instructions on how to setup this bot,
+    The code is simple enough to be understood by a regular Node JS user. And i am publicly
+    serving this app for up to 2000 users by now. I've made this source to be open-source
+    version of another bot named heist which is served on https://heist.lol/, since Heist
+    is __not__ open-source and __made in python__ I've made it in Node JS and released it to public.
 </p>
+<br/>
+<p align="center">
+    And yes, there will be updates in this source-code when i will have my free-time,
+    you are free to leave pull request with new changes to this, I am gonna check the code
+    and add it into the source code.
+</p>
+<br/>
+
+<p align="center">
+  <img src="assets/separator-info.png" width="200px">
+</p>
+<br/>
