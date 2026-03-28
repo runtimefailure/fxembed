@@ -169,6 +169,6 @@
 <br/>
 
 <p align="center">
-  <img src="assets/separator-info.png" width="500px">
+  <img src="assets/separator-info.png" width="900px">
 </p>
 <br/>
