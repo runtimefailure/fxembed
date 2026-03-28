@@ -151,15 +151,16 @@
 | GENIUS_SECRET | Genius app secret |
 | GENIUS_TOKEN | Genius app token |
 
-
+<br/>
 <p align="center">
     Also i would like to mention that i won't give you any instructions on how to setup this bot,
     The code is simple enough to be understood by a regular Node JS user. And i am publicly
     serving this app for up to 2000 users by now. I've made this source to be open-source
     version of another bot named heist which is served on https://heist.lol/, since Heist
-    is __not__ open-source and __made in python__ I've made it in Node JS and released it to public.
+    is not open-source and made in python I've made it in Node JS and released it to public.
 </p>
 <br/>
+
 <p align="center">
     And yes, there will be updates in this source-code when i will have my free-time,
     you are free to leave pull request with new changes to this, I am gonna check the code
@@ -168,6 +169,6 @@
 <br/>
 
 <p align="center">
-  <img src="assets/separator-info.png" width="200px">
+  <img src="assets/separator-info.png" width="500px">
 </p>
 <br/>
