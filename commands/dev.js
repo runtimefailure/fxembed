@@ -81,7 +81,6 @@ class DevCommand extends Command {
 
                 case 'httpstatus': {
                     const code = interaction.options.getInteger('code');
-                    // Using a hardcoded list for reliability
                     const statuses = {
                         200: 'OK - The request was successful.',
                         201: 'Created - The request was successful and a new resource was created.',

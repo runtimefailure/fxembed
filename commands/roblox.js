@@ -72,7 +72,6 @@ class RobloxCommand extends Command {
 
         try {
             const fetchUser = async (username) => {
-                // Extract ID if it's in the format "Name (@User) [ID]" from autocomplete
                 const idMatch = username.match(/\[(\d+)\]$/);
                 let userId;
                 if (idMatch) {
@@ -135,7 +134,6 @@ class RobloxCommand extends Command {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img1, 0, 0, 150, 150);
                     ctx.drawImage(img2, 150, 0, 150, 150);
-
                     const buffer = canvas.toBuffer('image/png');
 
                     return await interaction.editReply(templates.utilityResult({
@@ -190,7 +188,6 @@ class RobloxCommand extends Command {
 
                 case 'devex': {
                     const robux = interaction.options.getInteger('robux');
-                    // Current DevEx rate: 1 Robux = $0.0035 USD (or 100k = $350)
                     const usd = (robux * 0.0035).toFixed(2);
 
                     const content = `<:fxroblox:1487149343508267118> **Robux:** \`${robux.toLocaleString()}\`\n` +
@@ -237,10 +234,6 @@ class RobloxCommand extends Command {
 
                     const { paginate } = require('../utils/pagination');
                     
-                    // Pre-fetch details for the first page to be fast, 
-                    // or just let paginate handle it if we pass a generator/array.
-                    // To match the requested style, we need creator and universe details.
-                    
                     const items = await Promise.all(badgesList.map(async (b) => {
                         const detailRes = await fetch(`https://badges.roblox.com/v1/badges/${b.id}`);
                         const detail = await detailRes.json();
@@ -257,10 +250,10 @@ class RobloxCommand extends Command {
                             creatorType: detail.creator?.type || 'User',
                             universeName: detail.awardingUniverse?.name || 'Unknown',
                             rootPlaceId: detail.awardingUniverse?.rootPlaceId || 0,
-                            timesAwarded: detail.statistics?.pastDayAwardedCount || 0, // Simplified
+                            timesAwarded: detail.statistics?.pastDayAwardedCount || 0,
                             badgeIcon: b.displayIcon,
                             totalBadges: badgesList.length,
-                            userHeadshot: true // Placeholder for headshot logic
+                            userHeadshot: true /* Placeholder */
                         };
                     }));
 
@@ -323,17 +316,14 @@ class RobloxCommand extends Command {
                         const canvas = createCanvas(600, 300);
                         const ctx = canvas.getContext('2d');
                         
-                        // Background
                         ctx.fillStyle = '#1e1e2e';
                         ctx.fillRect(0, 0, 600, 300);
                         
-                        // Avatar
                         if (avatarUrl) {
                             const avatar = await loadImage(avatarUrl);
                             ctx.drawImage(avatar, 20, 20, 260, 260);
                         }
                         
-                        // Text
                         ctx.fillStyle = '#ffffff';
                         ctx.font = 'bold 32px sans-serif';
                         ctx.fillText(user.displayName, 300, 60);

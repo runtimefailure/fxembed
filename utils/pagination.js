@@ -20,12 +20,10 @@ async function paginate(interaction, items, templateFn, baseData, options = {}) 
     
     let pages = [];
     if (Array.isArray(items)) {
-        // List pagination
         for (let i = 0; i < items.length; i += itemsPerPage) {
             pages.push(items.slice(i, i + itemsPerPage));
         }
     } else if (typeof items === 'string') {
-        // Text/Lyrics pagination
         const lines = items.split('\n');
         let currentPageText = '';
         
@@ -52,7 +50,6 @@ async function paginate(interaction, items, templateFn, baseData, options = {}) 
             if (itemsPerPage === 1) {
                 const entry = pageItems[0];
                 if (typeof entry === 'object') {
-                    // For Urban Dictionary and similar
                     Object.assign(data, {
                         word: entry.word,
                         url: entry.permalink,
@@ -78,7 +75,7 @@ async function paginate(interaction, items, templateFn, baseData, options = {}) 
 
     const collector = initialMessage.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        time: 300000, // 5 minutes
+        time: 300000,
     });
 
     collector.on('collect', async (i) => {
@@ -129,13 +126,11 @@ async function paginate(interaction, items, templateFn, baseData, options = {}) 
                 await submission.update(templateFn(getPageData(currentPage - 1)));
                 return;
             } catch (err) {
-                return; // Timeout or error
+                return;
             }
         }
 
-        // Clamp page
         currentPage = Math.max(1, Math.min(currentPage, totalPages));
-        
         await i.update(templateFn(getPageData(currentPage - 1)));
     });
 

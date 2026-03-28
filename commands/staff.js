@@ -90,10 +90,6 @@ class StaffCommand extends Command {
                     let messages = [];
                     
                     if (fromId || toId) {
-                        // Fetch messages in range
-                        // Simplification: fetch around and filter. 
-                        // Real implementation would need pagination for large ranges.
-                        // We will fetch up to 100 for now.
                         messages = await interaction.channel.messages.fetch({ limit: 100 });
                         if (fromId) {
                             const index = messages.findIndex(m => m.id === fromId);
@@ -107,7 +103,6 @@ class StaffCommand extends Command {
                         messages = await interaction.channel.messages.fetch({ limit: amount });
                     }
 
-                    // Apply filters
                     let toDelete = messages.filter(m => {
                         if (m.id === interaction.id) return false;
                         if (filterUser && m.author.id !== filterUser.id) return false;
@@ -127,9 +122,7 @@ class StaffCommand extends Command {
                         deletedCount += bulk.size;
                     }
                     
-                    // Manual delete for old messages or if bulk fails/skips
                     const remaining = toDelete.filter(m => !youngMessages.has(m.id) || !youngMessages.find(ym => ym.id === m.id));
-                    // bulkDelete with 'true' skips old ones.
                     
                     for (const m of oldMessages.values()) {
                         try {

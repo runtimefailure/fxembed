@@ -113,6 +113,13 @@ class InfoCommand extends Command {
         }
     }
 
+
+
+    /**
+     * Format timestamp to time.
+     * @param {number} ms - The timestamp itself.
+     * @returns {string}
+     */
     formatDuration(ms) {
         const seconds = Math.floor((ms / 1000) % 60);
         const minutes = Math.floor((ms / (1000 * 60)) % 60);

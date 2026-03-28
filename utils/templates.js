@@ -504,16 +504,11 @@ const templates = {
             .addTextDisplayComponents(footer);
 
         if (data.userHeadshot) {
-            // Section doesn't support author icon directly in this builder, 
-            // but we can use Thumbnail or a hack if needed. 
-            // For now, let's just use the Headshot as a secondary thumbnail if possible or just skip.
         }
 
         return {
             flags: MessageFlags.IsComponentsV2,
             components: [container],
-            // We can't easily add the paginator here without returning rows, 
-            // but the paginate helper handles that.
         };
     },
 
