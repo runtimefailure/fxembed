@@ -1,10 +1,20 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates, EMOJIS } = require('../utils/templates');
-const { logger } = require('../index');
-const { createCanvas, loadImage } = require('canvas');
-const path = require('path');
-const fs = require('fs');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
+}                                   = require('discord.js');
+const { Command }                   = require('@sapphire/framework');
+const { templates, EMOJIS }         = require('../utils/templates');
+const { logger }                    = require('../index');
+const { createCanvas, loadImage }   = require('canvas');
+const path                          = require('path');
+const fs                            = require('fs');
+const os                            = require('os');
+const crypto                        = require('crypto');
+const archiver                      = require('archiver');
+const { paginate }                  = require('../utils/pagination');
 
 class RobloxCommand extends Command {
     constructor(context, options) {
@@ -26,19 +36,19 @@ class RobloxCommand extends Command {
                 .addSubcommand(sc => sc.setName('devex').setDescription('Calculate the USD value from Developer Exchange').addIntegerOption(o => o.setName('robux').setDescription('Amount of Robux').setRequired(true)))
                 .addSubcommand(sc => sc.setName('followers').setDescription("View a Roblox user's followers").addStringOption(o => o.setName('username').setDescription('Roblox username').setRequired(true).setAutocomplete(true)))
                 .addSubcommand(sc => sc.setName('recentbadges').setDescription("View a Roblox user's recent earned badges").addStringOption(o => o.setName('username').setDescription('Roblox username').setRequired(true).setAutocomplete(true)))
-                .addSubcommand(sc => 
-                    sc.setName('render')
-                        .setDescription('Render Roblox assets or avatars')
-                        .addSubcommand(ssc => ssc.setName('asset').setDescription('Render a Roblox asset into a 3D model').addStringOption(o => o.setName('assetid').setDescription('Asset ID').setRequired(true)))
-                        .addSubcommand(ssc => ssc.setName('avatar').setDescription('Render a Roblox avatar into a 3D model').addStringOption(o => o.setName('username').setDescription('Roblox username').setRequired(true).setAutocomplete(true)))
-                )
+                .addSubcommand(sc => sc.setName('render').setDescription('Generate a 3D model (.zip) of an asset or avatar').addStringOption(o => o.setName('type').setDescription('What to render').setRequired(true).addChoices({ name: 'Asset', value: 'asset' }, { name: 'Avatar', value: 'avatar' })).addStringOption(o => o.setName('query').setDescription('Asset ID or Username').setRequired(true).setAutocomplete(true)))
                 .addSubcommand(sc => sc.setName('user').setDescription('View detailed information about a Roblox user').addStringOption(o => o.setName('username').setDescription('Roblox username').setRequired(true).setAutocomplete(true)).addBooleanOption(o => o.setName('card').setDescription('Display as a profile card').setRequired(false)))
         );
     }
 
     async autocompleteRun(interaction) {
         const focusedOption = interaction.options.getFocused(true);
-        if (focusedOption.name !== 'username' && focusedOption.name !== 'user1' && focusedOption.name !== 'user2') return;
+        const sub = interaction.options.getSubcommand();
+
+        if (focusedOption.name === 'query' && sub === 'render') {
+            const type = interaction.options.getString('type');
+            if (type === 'asset') return interaction.respond([]); // Assets don't easily autocomplete
+        }
 
         const query = focusedOption.value;
         if (!query || query.length < 2) return interaction.respond([]);
@@ -232,8 +242,6 @@ class RobloxCommand extends Command {
 
                     if (badgesList.length === 0) throw new Error(`User \`${user.name}\` has no badges.`);
 
-                    const { paginate } = require('../utils/pagination');
-                    
                     const items = await Promise.all(badgesList.map(async (b) => {
                         const detailRes = await fetch(`https://badges.roblox.com/v1/badges/${b.id}`);
                         const detail = await detailRes.json();
@@ -261,37 +269,11 @@ class RobloxCommand extends Command {
                 }
 
                 case 'render': {
-                    const subSub = interaction.options.getSubcommand();
-                    if (subSub === 'asset') {
-                        const assetId = interaction.options.getString('assetid');
-                        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
-                        const thumbData = await thumbRes.json();
-                        const url = thumbData.data?.[0]?.imageUrl;
-
-                        if (!url) throw new Error('Could not render that asset.');
-
-                        return await interaction.editReply(templates.utilityResult({
-                            authorName,
-                            title: `Asset Render: ${assetId}`,
-                            content: `<:fxlink:1486095510434480208> [Asset Link](https://www.roblox.com/catalog/${assetId}/)`,
-                            media: url
-                        }));
-                    } else {
-                        const username = interaction.options.getString('username');
-                        const user = await fetchUser(username);
-                        const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${user.id}&size=720x720&format=Png&isCircular=false`);
-                        const thumbData = await thumbRes.json();
-                        const url = thumbData.data?.[0]?.imageUrl;
-
-                        if (!url) throw new Error('Could not render that avatar.');
-
-                        return await interaction.editReply(templates.utilityResult({
-                            authorName,
-                            title: `Avatar Render: ${user.displayName}`,
-                            content: `<:fxlink:1486095510434480208> [Profile Link](https://www.roblox.com/users/${user.id}/profile)`,
-                            media: url
-                        }));
-                    }
+                    return await interaction.editReply(templates.utilityResult({
+                        authorName,
+                        title: '3D Render',
+                        content: `<:fxclock:1486875894118219907> **3D Rendering** is currently being reworked and will be available soon!`
+                    }));
                 }
 
                 case 'user': {
@@ -353,7 +335,7 @@ class RobloxCommand extends Command {
                     const content = `<:fxid:1486875838858264636> **ID:** \`${user.id}\`\n` +
                         `<:fxuser:1486083426166509698> **Display Name:** \`${user.displayName}\`\n` +
                         `<:fxcalendar:1486875894118219907> **Joined:** <t:${Math.floor(createdAt.getTime() / 1000)}:R>\n` +
-                        `<:fxmembers:1486875899264634971> **Followers:** **${followData.count.toLocaleString()}**\n` +
+                        `<:fxmembers:1486875899264634971> **Members:** **${followData.count.toLocaleString()}**\n` +
                         `<:fxgroups:1487149343508267118> **Groups:** **${groupsData.data.length}**\n\n` +
                         `**Bio:**\n${user.description || 'No bio provided.'}`;
 

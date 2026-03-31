@@ -1,11 +1,14 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
-const { createCanvas, loadImage } = require('canvas');
-const ffmpegPath = require('ffmpeg-static');
-const { spawn } = require('child_process');
-const path = require('path');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType 
+}                                       = require('discord.js');
+const { Command }                       = require('@sapphire/framework');
+const { templates }                     = require('../utils/templates');
+const { logger }                        = require('../index');
+const { createCanvas, loadImage }       = require('canvas');
+const ffmpegPath                        = require('ffmpeg-static');
+const { spawn }                         = require('child_process');
+const path                              = require('path');
 
 class MediaCommand extends Command {
     constructor(context, options) {

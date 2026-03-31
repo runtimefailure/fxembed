@@ -1,7 +1,10 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
 
 class FunCommand extends Command {
     constructor(context, options) {
@@ -42,45 +45,27 @@ class FunCommand extends Command {
                     const optionsInput = interaction.options.getString('options');
                     const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
                     
-                    let content = `<:fxreport:1486878917687250954> **Question:** ${question}\n\n`;
                     let choices = [];
-
                     if (optionsInput) {
                         choices = optionsInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
                         if (choices.length > 10) throw new Error('Maximum 10 options allowed.');
                         if (choices.length < 2) throw new Error('Please provide at least 2 options.');
-
-                        choices.forEach((choice, i) => {
-                            content += `${emojis[i]} ${choice}\n`;
-                        });
                     } else {
-                        content += `👍 Yes\n👎 No`;
-                        choices = ['👍', '👎'];
+                        choices = ['Yes', 'No'];
                     }
 
-                    const msg = await interaction.editReply(templates.utilityResult({
-                        authorName,
-                        title: 'Server Poll',
-                        content,
-                        footer: 'React to vote!'
-                    }));
-
-                    try {
-                        const channel = interaction.channel || await interaction.user.createDM();
-                        const fullMsg = await channel.messages.fetch(msg.id);
-                        
-                        if (optionsInput) {
-                            for (let i = 0; i < choices.length; i++) {
-                                await fullMsg.react(emojis[i]);
-                            }
-                        } else {
-                            await fullMsg.react('👍');
-                            await fullMsg.react('👎');
+                    // * Use Discord's native Poll feature
+                    return await interaction.editReply({
+                        poll: {
+                            question: { text: question },
+                            answers: choices.map((text, i) => ({
+                                text,
+                                emoji: optionsInput ? emojis[i] : (i === 0 ? '👍' : '👎')
+                            })),
+                            allowMultiselect: false,
+                            duration: 24 // 24 hours
                         }
-                    } catch (e) {
-                        logger.error(`Failed to add reactions to poll: ${e.message}`);
-                    }
-                    return;
+                    });
                 }
                 case 'ship': {
                     const u1 = interaction.options.getUser('user1');

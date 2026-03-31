@@ -1,8 +1,11 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
-const { fetchWithRetry } = require('./steam');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
+const { fetchWithRetry }        = require('./steam');
 
 const EMOJIS = {
     doge: '1486407499748999230',

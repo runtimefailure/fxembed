@@ -1,11 +1,11 @@
-const { Command }       = require('@sapphire/framework');
-const { templates }     = require('../utils/templates');
-const { logger }        = require('../index');
-const path              = require('path');
-const fs                = require('fs');
-const os                = require('os');
-const ytDlp             = require('youtube-dl-exec');
-const ffmpegPath        = require('ffmpeg-static');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
+const path                      = require('path');
+const fs                        = require('fs');
+const os                        = require('os');
+const ytDlp                     = require('youtube-dl-exec');
+const ffmpegPath                = require('ffmpeg-static');
 
 const ASSETS = {
     separator:      path.join(process.cwd(), 'assets', 'separator-info.png'),
@@ -364,8 +364,7 @@ class EmbedCommand extends Command {
             }
 
         } catch (err) {
-            // throw err;
-            const parsedError = parseErr(err) || 'An unexpected error occurred while downloading the media.';
+            const parsedError = parseErr(err) || err;
             
             if (!interaction.deferred && !interaction.replied) return;
             await interaction.editReply({

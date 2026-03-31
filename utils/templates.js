@@ -3,9 +3,21 @@
     i need this
 */
 
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContainerBuilder, TextDisplayBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, SectionBuilder, ThumbnailBuilder, FileBuilder } = require('discord.js');
-const path = require('path');
-const fs = require('fs');
+const { 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ContainerBuilder, 
+    TextDisplayBuilder, 
+    MediaGalleryBuilder, 
+    MediaGalleryItemBuilder, 
+    MessageFlags, 
+    SectionBuilder, 
+    ThumbnailBuilder, 
+    FileBuilder 
+}                               = require('discord.js');
+const path                      = require('path');
+const fs                        = require('fs');
 
 const ASSETS = {
     separator: path.join(process.cwd(), 'assets', 'separator-info.png'),
@@ -109,7 +121,6 @@ const templates = {
                 .setStyle(ButtonStyle.Link)
                 .setURL(data.spotifyUrl || 'https://spotify.com')
                 .setEmoji({ name: 'fxspotify', id: '1486719789350129755' }),
-                // .setLabel('Open in Spotify'),
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Secondary)
                 .setCustomId('nowplayingaudio')
@@ -166,7 +177,7 @@ const templates = {
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Danger)
                 .setCustomId('paginator:cancel')
-                .setEmoji({ name: 'bin', id: '1317214464231079989' })
+                .setEmoji('1488390541166117058')
                 .setDisabled(data.disabled || false)
         );
 
@@ -219,7 +230,7 @@ const templates = {
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Danger)
                 .setCustomId('paginator:cancel')
-                .setEmoji({ name: 'bin', id: '1317214464231079989' })
+                .setEmoji('1488390541166117058')
                 .setDisabled(data.disabled || false)
         );
 
@@ -254,7 +265,6 @@ const templates = {
                 .setStyle(ButtonStyle.Link)
                 .setURL(data.spotifyUrl)
                 .setEmoji({ name: 'fxspotify', id: '1486719789350129755' })
-                // .setLabel('Open in Spotify')
         );
 
         return {
@@ -375,9 +385,16 @@ const templates = {
             .addMediaGalleryComponents(separator)
             .addTextDisplayComponents(errorText);
     
+        const deleteButton = new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId('paginator:cancel')
+            .setEmoji('1488390541166117058');
+
+        const row = new ActionRowBuilder().addComponents(deleteButton);
+
         return {
             flags: MessageFlags.IsComponentsV2,
-            components: [container],
+            components: [container, row],
             files: [{ attachment: getFile(ASSETS.separatorError), name: 'separator-error.png' }]
         };
     },
@@ -597,6 +614,17 @@ const templates = {
 
         const rows = data.extraComponents || [];
 
+        const deleteButton = new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId('paginator:cancel')
+            .setEmoji('1488390541166117058');
+
+        if (rows.length > 0) {
+            rows[0].addComponents(deleteButton);
+        } else {
+            rows.push(new ActionRowBuilder().addComponents(deleteButton));
+        }
+
         if (data.media) {
             const gallery = new MediaGalleryBuilder();
             if (Array.isArray(data.media)) {
@@ -668,7 +696,7 @@ const templates = {
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Danger)
                 .setCustomId('paginator:cancel')
-                .setEmoji({ name: 'bin', id: '1317214464231079989' })
+                .setEmoji('1488390541166117058')
                 .setDisabled(data.disabled || false)
         );
 
@@ -720,7 +748,7 @@ const templates = {
             .setContent(`\`\`\`yaml\n${data.lyrics}\`\`\``);
     
         const footerText = data.totalPages > 1 
-            ? `-# <:fxuser:1486083426166509698> ${data.username} • Genius • ${data.currentPage}/${data.totalPages}`
+            ? `-# <:fxuser:1486083426166509698> ${data.username} • ${data.source} • ${data.currentPage}/${data.totalPages}`
             : `-# <:fxuser:1486083426166509698> ${data.username} • Lyrics provided by ${data.source}`;
 
         const footer = new TextDisplayBuilder()
@@ -742,7 +770,6 @@ const templates = {
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
                 .setURL(data.spotifyUrl || 'https://spotify.com')
-                // .setLabel('Open in Spotify')
                 .setEmoji({ name: 'fxspotify', id: '1486719789350129755' }),
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
@@ -771,7 +798,7 @@ const templates = {
                 new ButtonBuilder()
                     .setStyle(ButtonStyle.Danger)
                     .setCustomId('paginator:cancel')
-                    .setEmoji({ name: 'bin', id: '1317214464231079989' })
+                    .setEmoji('1488390541166117058')
                     .setDisabled(data.disabled || false)
             );
             rows.push(navRow);

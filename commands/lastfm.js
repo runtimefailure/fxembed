@@ -1,10 +1,16 @@
-const { Command }                                               = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType }    = require('discord.js');
-const { getSong }                                               = require('genius-lyrics-api');
-const { logger }                                                = require('../index');
-const db                                                        = require('../utils/database'); 
-const { templates }                                             = require('../utils/templates');
-const { paginate }                                              = require('../utils/pagination');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { getLyrics }             = require('../utils/lyrics');
+const { logger }                = require('../index');
+const db                        = require('../utils/database'); 
+const { templates }             = require('../utils/templates');
+const { paginate }              = require('../utils/pagination');
 
 const PERIODS = {
     '7day': 'last 7 days',
@@ -60,8 +66,35 @@ class LastfmCommand extends Command {
                 .addSubcommand(sc => sc.setName('topalbums').setDescription('Top albums').addStringOption(o => o.setName('username').setDescription('Last.fm username').setRequired(false)).addStringOption(o => o.setName('period').setDescription('Time period').addChoices(...PERIOD_CHOICES)))
                 .addSubcommand(sc => sc.setName('spotify').setDescription('Find current playing on Spotify').addStringOption(o => o.setName('username').setDescription('Last.fm username').setRequired(false)))
                 .addSubcommand(sc => sc.setName('lyrics').setDescription('View lyrics of current playing song on Spotify').addStringOption(o => o.setName('username').setDescription('Last.fm username').setRequired(false)))
+                .addSubcommand(sc => sc.setName('profile').setDescription('View a Last.fm artist profile').addStringOption(o => o.setName('artist').setDescription('Artist name').setRequired(true).setAutocomplete(true)))
+                .addSubcommand(sc => sc.setName('whoknows').setDescription('Who knows an artist in this server').addStringOption(o => o.setName('artist').setDescription('Artist name').setRequired(true).setAutocomplete(true)))
                 .addSubcommand(sc => sc.setName('current').setDescription('View the song currently being scrobbled').addStringOption(o => o.setName('username').setDescription('Last.fm username').setRequired(false)));
         }, { idHints: ['1486102984940196011'] });
+    }
+
+    async autocompleteRun(interaction) {
+        const sub = interaction.options.getSubcommand();
+        if (sub !== 'profile' && sub !== 'whoknows') return;
+
+        const focusedOption = interaction.options.getFocused(true);
+        if (focusedOption.name !== 'artist') return;
+
+        const query = focusedOption.value;
+        if (!query || query.length < 2) return interaction.respond([]);
+
+        try {
+            const res = await fetchLastFm('artist.search', { artist: query, limit: 10 });
+            const artists = res.results?.artistmatches?.artist || [];
+            
+            const results = artists.map(a => ({
+                name: a.name.substring(0, 100),
+                value: a.name.substring(0, 100)
+            }));
+
+            return interaction.respond(results);
+        } catch (err) {
+            return interaction.respond([]);
+        }
     }
 
     async chatInputRun(interaction) {
@@ -80,6 +113,16 @@ class LastfmCommand extends Command {
             await db.setLastFm(interaction.user.id, inputUser);
             if (!interaction.deferred && !interaction.replied) return;
             return interaction.editReply({ content: `<:fxcheckwithbox:1487148430563475466> Successfully linked your Last.fm account to **${inputUser}**.` });
+        }
+
+        if (subCommand === 'profile') {
+            const artistName = interaction.options.getString('artist');
+            return this.handleProfile(interaction, artistName);
+        }
+
+        if (subCommand === 'whoknows') {
+            const artistName = interaction.options.getString('artist');
+            return this.handleWhoKnows(interaction, artistName);
         }
 
         const targetUser = inputUser || userData.lastfm;
@@ -114,6 +157,115 @@ class LastfmCommand extends Command {
     }
 
     /**
+     * Handles the whoknows subcommand.
+     * @param {Object} interaction - The Discord interaction.
+     * @param {string} artistName - The artist name.
+     */
+    async handleWhoKnows(interaction, artistName) {
+        if (!interaction.guild) throw new Error('This command must be used in a server.');
+
+        const artistRes = await fetchLastFm('artist.getInfo', { artist: artistName });
+        const artist = artistRes.artist;
+        if (!artist) throw new Error('Artist not found.');
+
+        const linkedUsers = await db.getAllLinkedUsers();
+        if (!linkedUsers.length) throw new Error('No users in this server have linked their Last.fm account.');
+
+        const guildMembers = await interaction.guild.members.fetch();
+        const serverUsers = linkedUsers.filter(u => guildMembers.has(u.id));
+
+        if (!serverUsers.length) throw new Error('No users in this server have linked their Last.fm account.');
+
+        const leaderboard = [];
+        let totalPlays = 0;
+
+        await Promise.all(serverUsers.map(async (u) => {
+            try {
+                const info = await fetchLastFm('artist.getInfo', { artist: artistName, username: u.lastfm });
+                const playcount = parseInt(info.artist?.stats?.userplaycount) || 0;
+                if (playcount > 0) {
+                    const member = guildMembers.get(u.id);
+                    leaderboard.push({
+                        id: u.id,
+                        tag: member.user.username,
+                        playcount
+                    });
+                    totalPlays += playcount;
+                }
+            } catch (e) {}
+        }));
+
+        if (!leaderboard.length) throw new Error(`Nobody in this server knows **${artist.name}**.`);
+
+        leaderboard.sort((a, b) => b.playcount - a.playcount);
+
+        const totalListeners = leaderboard.length;
+        const avgPlays = Math.round(totalPlays / totalListeners);
+
+        const formatted = leaderboard.map((u, i) => {
+            const rank = i === 0 ? '👑' : `${i + 1}.`;
+            const entry = `${rank} **${u.tag}** - **${u.playcount.toLocaleString()}** plays`;
+            return u.id === interaction.user.id ? `**${entry}**` : entry;
+        });
+
+        const baseData = {
+            username: interaction.user.username,
+            title: `<:fxlastfm:1486114519343304794> Who knows ${artist.name}`,
+            content: `-# ${artist.name} — ${totalListeners} listeners — ${totalPlays.toLocaleString()} plays — ${avgPlays.toLocaleString()} avg`,
+            thumbnail: artist.image?.[3]?.['#text'] || artist.image?.[2]?.['#text'] || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
+        };
+
+        if (!interaction.deferred && !interaction.replied) return;
+        return paginate(interaction, formatted, templates.toplist, baseData, { itemsPerPage: 10 });
+    }
+
+    /**
+     * Handles the profile subcommand.
+     * @param {Object} interaction - The Discord interaction.
+     * @param {string} artistName - The artist name to look up.
+     */
+    async handleProfile(interaction, artistName) {
+        const res = await fetchLastFm('artist.getInfo', { artist: artistName });
+        const artist = res.artist;
+        if (!artist) throw new Error('Artist not found.');
+
+        const stats = artist.stats;
+        const bio = (artist.bio?.content || artist.bio?.summary || 'No biography available.')
+            .split('<a href')[0]
+            .trim();
+            
+        const tags = artist.tags?.tag?.map(t => `[${t.name}](${t.url})`).join(', ') || 'N/A';
+        
+        let content = `## [${artist.name}](${artist.url})\n${bio.substring(0, 1500)}${bio.length > 1500 ? '...' : ''}\n\n`;
+        content += `<:fxmembers:1486875899264634971> **Listeners:** ${Number(stats.listeners).toLocaleString()} • <:fxnote:1486719323257962516> **Scrobbles:** ${Number(stats.playcount).toLocaleString()}\n`;
+        content += `<:fxchannel:1486875880465764465> **Tags:** ${tags}`;
+
+        const buttons = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setEmoji('1486114519343304794')
+                .setURL(artist.url),
+            new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setEmoji('1486719789350129755')
+                .setURL(`https://open.spotify.com/search?q=${encodeURIComponent(artist.name)}`),
+            new ButtonBuilder()
+                .setStyle(ButtonStyle.Link)
+                .setEmoji('1487178649177428079')
+                .setURL(`https://www.youtube.com/results?search_query=${encodeURIComponent(artist.name)}`)
+        );
+
+        if (!interaction.deferred && !interaction.replied) return;
+        return interaction.editReply(templates.utilityResult({
+            authorName: interaction.user.username,
+            title: `<:fxlastfm:1486114519343304794> Artist Profile`,
+            content,
+            thumbnail: artist.image?.[3]?.['#text'] || artist.image?.[2]?.['#text'] || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png',
+            extraComponents: [buttons]
+        }));
+    }
+
+    /**
      * Handles the current subcommand (generic now playing).
      * @param {Object} interaction - The Discord interaction.
      * @param {string} targetUser - The validated Last.fm username.
@@ -127,7 +279,6 @@ class LastfmCommand extends Command {
         const trackName = track.name;
         const albumName = track.album['#text'] || 'Unknown Album';
 
-        const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
         const buttons = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
@@ -136,7 +287,7 @@ class LastfmCommand extends Command {
             new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
                 .setEmoji('1486719789350129755')
-                .setURL(`https://open.spotify.com/search/${encodeURIComponent(trackName + ' ' + artistName)}`),
+                .setURL(`https://open.spotify.com/search?q=${encodeURIComponent(trackName + ' ' + artistName)}`),
              new ButtonBuilder()
                 .setStyle(ButtonStyle.Link)
                 .setEmoji('1487178172255567883')
@@ -166,41 +317,26 @@ class LastfmCommand extends Command {
         const artistName = track.artist['#text'];
         const trackName = track.name;
 
-        const options = {
-            apiKey: process.env.GENIUS_TOKEN,
-            title: trackName,
-            artist: artistName,
-            optimizeQuery: true
-        };
-
-        const song = await getSong(options);
+        const song = await getLyrics(`${trackName} | ${artistName}`);
         
         if (!song || !song.lyrics) {
-            throw new Error(`Could not find lyrics for **${trackName}** by **${artistName}** on Genius.`);
+            throw new Error(`Could not find lyrics for **${trackName}** by **${artistName}** on any provider.`);
         }
-
-        let cleanLyrics = song.lyrics
-            .replace(/^\d+\s*Contributors/i, '')    // Remove contributors
-            .replace(/^Translations.*?\n+/is, '')   // Remove translation headers
-            .replace(/^[^\n]*Lyrics\s*/i, '')       // Remove "Song Title Lyrics" header
-            .replace(/^\[.*?\]\s*\n+/i, '')         // Remove bracketed translation info like [Перевод...]
-            .replace(/\d+Embed$/i, '')              // Remove trailing "Embed" text often found in Genius scrapes
-            .trim();
 
         const baseData = {
             username: targetUser,
-            trackName: trackName,
-            trackUrl: track.url,
-            artistName: artistName,
-            artistUrl: `https://last.fm/music/${encodeURIComponent(artistName)}`,
+            trackName: song.title || trackName,
+            trackUrl: song.url || track.url,
+            artistName: song.artist || artistName,
+            artistUrl: `https://last.fm/music/${encodeURIComponent(song.artist || artistName)}`,
             thumbnailUrl: song.albumArt || track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png',
-            source: 'Genius',
+            source: song.source,
             geniusUrl: song.url || 'https://genius.com',
-            spotifyUrl: `https://open.spotify.com/search/$$${encodeURIComponent(trackName + ' ' + artistName)}`
+            spotifyUrl: `https://open.spotify.com/search?q=${encodeURIComponent((song.title || trackName) + ' ' + (song.artist || artistName))}`
         };
 
         if (!interaction.deferred && !interaction.replied) return;
-        return paginate(interaction, cleanLyrics, templates.lyrics, baseData, { maxChars: 1000 });
+        return paginate(interaction, song.lyrics, templates.lyrics, baseData, { maxChars: 1000 });
     }
 
     /**
@@ -237,7 +373,7 @@ class LastfmCommand extends Command {
             albumScrobbles: albumInfo.album?.userplaycount || 1,
             artistScrobbles: artistInfo.artist?.stats?.userplaycount || 1,
             totalScrobbles,
-            spotifyUrl: `https://open.spotify.com/search/$$${encodeURIComponent(track.name + ' ' + artistName)}`
+            spotifyUrl: `https://open.spotify.com/search?q=${encodeURIComponent(track.name + ' ' + artistName)}`
         }));
     }
 
@@ -303,12 +439,20 @@ class LastfmCommand extends Command {
             }
         });
 
+        let thumbUrl = items[0].image?.[3]?.['#text'] || items[0].image?.[2]?.['#text'];
+        if (type === 'artist' && (!thumbUrl || thumbUrl.includes('2a96cbd8b46e442fc41c2b86b821562f'))) {
+            try {
+                const artistInfo = await fetchLastFm('artist.getInfo', { artist: items[0].name });
+                thumbUrl = artistInfo.artist?.image?.[3]?.['#text'] || artistInfo.artist?.image?.[2]?.['#text'];
+            } catch (e) {}
+        }
+
         const baseData = {
             username: targetUser,
             titleType: type === 'artist' ? 'Artists' : type === 'track' ? 'Tracks' : 'Albums',
             period: PERIODS[period],
             totalScrobbles,
-            thumbnailUrl: items[0].image?.[3]?.['#text'] || items[0].image?.[2]?.['#text'] || 'https://lastfm.freetls.fastly.net/i/u/300x300/1e2037a8e0fd339870b5c16e49645d5a.jpg'
+            thumbnailUrl: thumbUrl || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png'
         };
 
         if (!interaction.deferred && !interaction.replied) return;
@@ -333,7 +477,7 @@ class LastfmCommand extends Command {
             artistName: track.artist['#text'],
             artistUrl: `https://last.fm/music/${encodeURIComponent(track.artist['#text'])}`,
             thumbnailUrl: track.image?.[3]?.['#text'] || track.image?.[2]?.['#text'] || 'https://lastfm.freetls.fastly.net/i/u/300x300/2a96cbd8b46e442fc41c2b86b821562f.png',
-            spotifyUrl: `https://open.spotify.com/search/$$${encodeURIComponent(track.name + ' ' + track.artist['#text'])}`
+            spotifyUrl: `https://open.spotify.com/search?q=${encodeURIComponent(track.name + ' ' + track.artist['#text'])}`
         }));
     }
 }

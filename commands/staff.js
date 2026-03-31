@@ -1,7 +1,12 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType, PermissionFlagsBits } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType, 
+    PermissionFlagsBits, 
+    EmbedBuilder 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
 
 class StaffCommand extends Command {
     constructor(context, options) {
@@ -29,7 +34,10 @@ class StaffCommand extends Command {
                             { name: 'All', value: 'all' },
                             { name: 'Messages Only', value: 'msg' },
                             { name: 'Images/Attachments', value: 'img' },
-                            { name: 'Reactions Only (LATER)', value: 'reactions' }
+                            { name: 'Reactions Only', value: 'reactions' },
+                            { name: 'Stickers Only', value: 'stickers' },
+                            { name: 'GIFs Only', value: 'gifs' },
+                            { name: 'Emojis Only', value: 'emojis' }
                         ))
                 )
                 .addSubcommand(sc =>
@@ -87,6 +95,29 @@ class StaffCommand extends Command {
                     const filterContent = interaction.options.getString('content');
                     const filterType = interaction.options.getString('type') || 'all';
 
+                    if (filterType === 'reactions') {
+                        const amount = interaction.options.getInteger('amount') || 50;
+                        const messages = await interaction.channel.messages.fetch({ limit: amount });
+                        let clearedCount = 0;
+
+                        for (const m of messages.values()) {
+                            if (m.reactions.cache.size > 0) {
+                                try {
+                                    await m.reactions.removeAll();
+                                    clearedCount++;
+                                } catch (e) {
+                                    logger.error(`Failed to clear reactions from message ${m.id}: ${e.message}`);
+                                }
+                            }
+                        }
+
+                        return await interaction.editReply(templates.utilityResult({
+                            authorName,
+                            title: 'Reactions Cleared',
+                            content: `<:fxcheckwithbox:1487148430563475466> Successfully cleared reactions from **${clearedCount}** messages.`
+                        }));
+                    }
+
                     let messages = [];
                     
                     if (fromId || toId) {
@@ -107,8 +138,24 @@ class StaffCommand extends Command {
                         if (m.id === interaction.id) return false;
                         if (filterUser && m.author.id !== filterUser.id) return false;
                         if (filterContent && !m.content.toLowerCase().includes(filterContent.toLowerCase())) return false;
-                        if (filterType === 'msg' && (m.attachments.size > 0 || m.embeds.length > 0)) return false;
-                        if (filterType === 'img' && m.attachments.size === 0) return false;
+                        
+                        if (filterType === 'msg') {
+                            if (m.attachments.size > 0 || m.embeds.length > 0 || m.stickers.size > 0) return false;
+                        } else if (filterType === 'img') {
+                            if (m.attachments.size === 0) return false;
+                        } else if (filterType === 'stickers') {
+                            if (m.stickers.size === 0) return false;
+                        } else if (filterType === 'gifs') {
+                            const isGif = m.attachments.some(a => a.contentType?.includes('gif')) || 
+                                          m.embeds.some(e => e.video || e.url?.includes('tenor.com') || e.url?.includes('giphy.com'));
+                            if (!isGif) return false;
+                        } else if (filterType === 'emojis') {
+                            const customEmojiRegex = /<a?:[a-zA-Z0-9_]+:[0-9]+>/g;
+                            const unicodeEmojiRegex = /\p{Extended_Pictographic}|\p{Emoji_Component}/gu;
+                            const cleaned = m.content.replace(customEmojiRegex, '').replace(unicodeEmojiRegex, '').replace(/\s/g, '');
+                            if (cleaned.length > 0 || m.content.length === 0) return false;
+                        }
+                        
                         return true;
                     });
 
@@ -152,7 +199,6 @@ class StaffCommand extends Command {
                     const author = interaction.options.getString('author');
                     const channel = interaction.options.getChannel('channel') || interaction.channel;
 
-                    const { EmbedBuilder } = require('discord.js');
                     const embed = new EmbedBuilder();
 
                     if (title) embed.setTitle(title);

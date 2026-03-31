@@ -2,7 +2,13 @@
  * Utility for handling message pagination with Discord Components V2.
  */
 
-const { ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { 
+    ComponentType, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle, 
+    ActionRowBuilder 
+}                               = require('discord.js');
 
 /**
  * Paginates a command's output.
@@ -61,7 +67,7 @@ async function paginate(interaction, items, templateFn, baseData, options = {}) 
                     });
                 }
             }
-            data.listData = pageItems.join('\n\n');
+            data.listData = pageItems.join('\n');
         } else {
             data.lyrics = pages[pageIndex];
         }

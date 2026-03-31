@@ -1,9 +1,12 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
-const translate = require('@iamtraction/google-translate');
-const path = require('path');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
+const translate                 = require('@iamtraction/google-translate');
+const path                      = require('path');
 
 const ASSETS = {
     separatorError: path.join(process.cwd(), 'assets', 'separator-error.png'),

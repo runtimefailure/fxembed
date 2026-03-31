@@ -72,6 +72,7 @@
 | `lastfm spotify` | Find current playing on Spotify |
 | `lastfm lyrics` | View lyrics of current playing song on Spotify |
 | `lastfm current` | View the song currently being scrobbled |
+| `lastfm profile` | View profile of an artist on Last.fm |
 | `media` | Multimedia commands |
 | `media imagetogif` | Convert an image to GIF |
 | `media speechbubble` | Add a speech bubble cutout to an image |
@@ -150,6 +151,8 @@
 | `GENIUS_ID` | Genius app id |
 | `GENIUS_SECRET` | Genius app secret |
 | `GENIUS_TOKEN` | Genius app token |
+| `API_HOST` | API hosting from bot (not required) |
+
 
 <br/>
 <p align="center">

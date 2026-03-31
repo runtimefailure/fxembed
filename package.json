@@ -11,8 +11,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@hono/node-server": "^1.19.12",
     "@iamtraction/google-translate": "^1.1.2",
     "@sapphire/framework": "^5.5.0",
+    "archiver": "^7.0.1",
     "canvas": "^3.2.2",
     "colorette": "^2.0.20",
     "discord.js": "^14.16.3",
@@ -21,9 +23,12 @@
     "figlet": "^1.11.0",
     "genius-lyrics-api": "^3.2.1",
     "gradient-string": "^3.0.0",
+    "hono": "^4.12.9",
+    "jsqr": "^1.4.0",
     "kaori": "^2.0.6",
     "lightweight-charts": "^5.1.0",
     "node-shazam": "^1.2.7",
+    "openai": "^6.33.0",
     "qrcode": "^1.5.4",
     "sqlite3": "^6.0.1",
     "youtube-dl-exec": "^3.1.4"

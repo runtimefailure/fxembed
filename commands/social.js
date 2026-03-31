@@ -1,7 +1,10 @@
-const { Command } = require('@sapphire/framework');
-const { ApplicationIntegrationType, InteractionContextType } = require('discord.js');
-const { templates } = require('../utils/templates');
-const { logger } = require('../index');
+const { 
+    ApplicationIntegrationType, 
+    InteractionContextType 
+}                               = require('discord.js');
+const { Command }               = require('@sapphire/framework');
+const { templates }             = require('../utils/templates');
+const { logger }                = require('../index');
 
 class SocialCommand extends Command {
     constructor(context, options) {

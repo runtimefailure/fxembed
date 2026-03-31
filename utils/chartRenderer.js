@@ -1,5 +1,13 @@
 const { createCanvas } = require('canvas');
 
+/**
+ * Renders a high-resolution price chart as a PNG buffer.
+ * @param {number[]} prices - Array of price points to plot.
+ * @param {number[]} [timestamps=[]] - Array of corresponding timestamps (ms).
+ * @param {number} [width=1608] - Base width of the chart.
+ * @param {number} [height=500] - Base height of the chart.
+ * @returns {Buffer} The generated PNG image as a Buffer.
+ */
 function renderChart(prices, timestamps = [], width = 1608, height = 500) {
     const DPR    = 2;
     const canvas = createCanvas(width * DPR, height * DPR);
@@ -21,9 +29,24 @@ function renderChart(prices, timestamps = [], width = 1608, height = 500) {
     const lo    = minP - pad;
     const range = hi - lo;
 
+    /**
+     * Calculates the X coordinate for a given data index.
+     * @param {number} i 
+     */
     const xOf = i => PAD.left + (i / (prices.length - 1)) * CW;
+
+    /**
+     * Calculates the Y coordinate for a given price value.
+     * @param {number} p 
+     */
     const yOf = p => PAD.top  + CH - ((p - lo) / range) * CH;
 
+    /**
+     * Calculates a "nice" human-readable step for axis ticks.
+     * @param {number} rawRange 
+     * @param {number} targetTicks 
+     * @returns {number}
+     */
     function niceStep(rawRange, targetTicks) {
         const rough = rawRange / targetTicks;
         const mag   = Math.pow(10, Math.floor(Math.log10(rough)));
@@ -137,7 +160,7 @@ function renderChart(prices, timestamps = [], width = 1608, height = 500) {
     ctx.font         = '16px sans-serif';
     ctx.textAlign    = 'right';
     ctx.textBaseline = 'top';
-    ctx.fillText('fxmbed', PAD.left + CW - 10, PAD.top + 8);
+    ctx.fillText('fxmbed', width - PAD.right - 10, PAD.top + 8);
 
     return canvas.toBuffer('image/png');
 }

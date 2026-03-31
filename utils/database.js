@@ -1,5 +1,5 @@
-const sqlite3 = require('sqlite3').verbose();
-const path    = require('path');
+const sqlite3           = require('sqlite3').verbose();
+const path              = require('path');
 
 class Database {
     constructor() {
@@ -86,9 +86,55 @@ class Database {
      * @param {string} user - The Last.fm username.
      * @returns {Promise<Object>}
      */
-    async setFm(id, user) {
+    async setLastFm(id, user) {
         await this.getUser(id);
         return this.run('UPDATE users SET lastfm = ? WHERE id = ?', [user, id]);
+    }
+
+    /**
+     * Fetches all users who have a Last.fm username linked.
+     * @returns {Promise<Array>}
+     */
+    async getAllLinkedUsers() {
+        return this.all('SELECT id, lastfm FROM users WHERE lastfm IS NOT NULL');
+    }
+
+    /**
+     * Updates a user's timezone.
+     * @param {string} id - The user's Discord ID.
+     * @param {string} timezone - The timezone name.
+     * @returns {Promise<Object>}
+     */
+    async setTimezone(id, timezone) {
+        await this.getUser(id);
+        return this.run('UPDATE users SET timezone = ? WHERE id = ?', [timezone, id]);
+    }
+
+    async createTag(ownerId, name, content) {
+        return this.run('INSERT INTO tags (owner_id, name, content) VALUES (?, ?, ?)', [ownerId, name.toLowerCase(), content]);
+    }
+
+    async getTag(name) {
+        return this.get('SELECT * FROM tags WHERE name = ?', [name.toLowerCase()]);
+    }
+
+    async updateTag(name, content) {
+        return this.run('UPDATE tags SET content = ? WHERE name = ?', [content, name.toLowerCase()]);
+    }
+
+    async deleteTag(name) {
+        return this.run('DELETE FROM tags WHERE name = ?', [name.toLowerCase()]);
+    }
+
+    async listTags(ownerId) {
+        if (ownerId) {
+            return this.all('SELECT * FROM tags WHERE owner_id = ? ORDER BY name ASC', [ownerId]);
+        }
+        return this.all('SELECT * FROM tags ORDER BY name ASC');
+    }
+
+    async searchTags(query) {
+        return this.all('SELECT name FROM tags WHERE name LIKE ? LIMIT 25', [`%${query.toLowerCase()}%`]);
     }
 
     /**
