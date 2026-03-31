@@ -29,13 +29,13 @@
 | :--- | :--- |
 | `ai` | AI powered utilities |
 | `ai geolocate` | Use AI to geolocate an image |
-| `ai deepgeolocate` | ✨ Use AI to geolocate & deeply analyze an image |
-| `ai perplexity` | ✨ Search the web with Perplexity Sonar |
-| `ai tts` | ✨ Convert text to audio using AI |
+| `ai deepgeolocate` | Use AI to geolocate & deeply analyze an image |
+| `ai perplexity` | Search the web with Perplexity Sonar |
+| `ai tts` | Convert text to audio using AI |
 | `ai llama` | Ask LLaMA-3.1-8b-instant a question |
 | `ai chatgpt` | Ask ChatGPT a question |
 | `ai ocr` | Extract text from images using AI |
-| `ai grok-imagine` | ✨ Use Grok to generate an image |
+| `ai grok-imagine` | Use Grok to generate an image |
 | `ai usage` | Check your daily AI token usage |
 | `base64` | Base64 encoding and decoding commands |
 | `base64 encode` | Encode a string to Base64 |
@@ -51,8 +51,8 @@
 | `crypto address` | Check balance and transactions of a crypto address |
 | `crypto track` | Track a crypto transaction hash |
 | `custom` | Personalized AI utilities |
-| `custom ai-chat` | ✨ Chat to your custom AI |
-| `custom ai-build` | ✨ Build your custom AI (Model & Prompt) |
+| `custom ai-chat` | Chat to your custom AI |
+| `custom ai-build` | Build your custom AI (Model & Prompt) |
 | `dev` | Development and coding tools |
 | `dev npm` | Search for packages on the npm registry |
 | `dev pypi` | Search for Python packages on PyPI |
