@@ -27,12 +27,22 @@
 
 | Command | Description |
 | :--- | :--- |
+| `ai` | AI powered utilities |
+| `ai geolocate` | Use AI to geolocate an image |
+| `ai deepgeolocate` | ✨ Use AI to geolocate & deeply analyze an image |
+| `ai perplexity` | ✨ Search the web with Perplexity Sonar |
+| `ai tts` | ✨ Convert text to audio using AI |
+| `ai llama` | Ask LLaMA-3.1-8b-instant a question |
+| `ai chatgpt` | Ask ChatGPT a question |
+| `ai ocr` | Extract text from images using AI |
+| `ai grok-imagine` | ✨ Use Grok to generate an image |
+| `ai usage` | Check your daily AI token usage |
 | `base64` | Base64 encoding and decoding commands |
 | `base64 encode` | Encode a string to Base64 |
 | `base64 decode` | Decode a Base64 string |
 | `convert` | Conversion and lookup commands |
 | `convert discord2user` | Get Discord User info from an ID |
-| `convert discord2id` | Get Discord User ID from a username (must be in the same server) |
+| `convert discord2id` | Get Discord User ID from a username |
 | `convert roblox2user` | Get Roblox User info from an ID |
 | `convert roblox2id` | Get Roblox User ID from a username |
 | `crypto` | Cryptocurrency and economy commands |
@@ -40,6 +50,9 @@
 | `crypto graph` | View the price graph of a crypto |
 | `crypto address` | Check balance and transactions of a crypto address |
 | `crypto track` | Track a crypto transaction hash |
+| `custom` | Personalized AI utilities |
+| `custom ai-chat` | ✨ Chat to your custom AI |
+| `custom ai-build` | ✨ Build your custom AI (Model & Prompt) |
 | `dev` | Development and coding tools |
 | `dev npm` | Search for packages on the npm registry |
 | `dev pypi` | Search for Python packages on PyPI |
@@ -57,7 +70,7 @@
 | `fun 8ball` | Get an answer from the magic 8-ball |
 | `fun meme` | Fetch a random meme from Reddit |
 | `fun cat` | Fetch a random cat image |
-| `fun poll` | Create a quick reaction-based poll |
+| `fun poll` | Create a native Discord poll |
 | `info` | General information and statistics |
 | `info bot` | View bot statistics and uptime |
 | `info ping` | Check bot latency |
@@ -70,9 +83,10 @@
 | `lastfm toptracks` | Top tracks |
 | `lastfm topalbums` | Top albums |
 | `lastfm spotify` | Find current playing on Spotify |
-| `lastfm lyrics` | View lyrics of current playing song on Spotify |
+| `lastfm lyrics` | View lyrics of current playing song on Spotify (Multi-provider) |
 | `lastfm current` | View the song currently being scrobbled |
-| `lastfm profile` | View profile of an artist on Last.fm |
+| `lastfm profile` | View detailed info about a Last.fm artist |
+| `lastfm whoknows` | Server-wide artist leaderboard |
 | `media` | Multimedia commands |
 | `media imagetogif` | Convert an image to GIF |
 | `media speechbubble` | Add a speech bubble cutout to an image |
@@ -95,16 +109,15 @@
 | `roblox devex` | Calculate the USD value from Developer Exchange |
 | `roblox followers` | View a Roblox user's followers |
 | `roblox recentbadges` | View a Roblox user's recent earned badges |
-| `roblox render asset` | Render a Roblox asset into a 3D model |
-| `roblox render avatar` | Render a Roblox avatar into a 3D model |
+| `roblox render` | 3D Modeling (Coming Soon) |
 | `roblox user` | View detailed information about a Roblox user |
 | `social` | Social media and profile commands |
 | `social github` | View GitHub profile and statistics |
-| `social mc`-skin | View a Minecraft player's skin and UUID |
-| `social roblox`-group | View statistics of a Roblox group |
+| `social mc-skin` | View a Minecraft player's skin and UUID |
+| `social roblox-group` | View statistics of a Roblox group |
 | `social namecheck` | Check availability of a username across platforms |
 | `staff` | Server administration and moderation commands |
-| `staff purge` | Purge messages with advanced filters |
+| `staff purge` | Advanced message/reaction purging |
 | `staff embed` | Send a fully customized embed |
 | `staff role` | Manage roles for a user |
 | `staff timeout` | Timeout a user |
@@ -116,28 +129,26 @@
 | `steam bans` | Check for VAC or game bans on an account |
 | `steam playing` | See what a user is currently playing |
 | `steam game` | View steam game information |
-| `translate` | Translate text to a different language |
+| `tags` | Global tag system |
+| `tags create` | Create a new global tag |
+| `tags send` | Retrieve and send a tag content |
+| `tags edit` | Edit a tag you own |
+| `tags delete` | Delete a tag you own |
+| `tags list` | List all your created tags |
 | `util` | Utility commands |
 | `util asciify` | Convert text to ASCII art |
-| `util ocr` | Extract text from an image |
+| `util qrcode` | Generate or scan QR codes |
+| `util badtranslate` | Cyclical random translation |
 | `util iplookup` | Lookup an IP address |
 | `util resolvedns` | Resolve DNS records of a domain |
-| `util subdomains` | Lookup subdomains of a domain |
 | `util urban` | Search Urban Dictionary |
-| `util qr` | Generate a QR code |
-| `util calc` | Calculate a mathematical expression |
 | `util weather` | Get current weather for a city |
-| `util shorten` | Create a short link |
-| `util screenshot` | Capture a website screenshot |
-| `util ip2geo` | Geolocate an IP address |
-| `util userfinder` | Find user accounts from username |
-| `util translate` | Translate text |
-| `util password` | Generate a secure random password |
-| `util hash` | Generate hashes for text |
-| `util timezone` | Convert time between time zones |
-| `util shazam` | Find a track from an audio file |
+| `util search` | Web search (DuckDuckGo, Google, etc.) |
+| `util news` | News search with time filters |
+| `util timezone` | Set your personal timezone |
+| `util timezoneview` | View time for a user or timezone |
+| `util shazam` | Identify a song from an audio file |
 | `util lyrics` | Search for song lyrics |
-| `util echo` | Make the bot say a message |
 
 
 ## Envirement
@@ -148,10 +159,10 @@
 | `CLIENT_ID` | Discord bot id |
 | `CLIENT_SECRET` | Discord bot secret |
 | `AUDIOSCROBBLER` | Audioscrobbler api key |
-| `GENIUS_ID` | Genius app id |
-| `GENIUS_SECRET` | Genius app secret |
 | `GENIUS_TOKEN` | Genius app token |
-| `API_HOST` | API hosting from bot (not required) |
+| `NAVY_KEY` | Navy AI API Key |
+| `API_HOST` | API hosting (true/false) |
+| `PORT` | API Port (default: 3000) |
 
 
 <br/>
